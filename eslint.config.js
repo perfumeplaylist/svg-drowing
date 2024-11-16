@@ -5,7 +5,10 @@ import prettier from 'eslint-plugin-prettier';
 import react from 'eslint-plugin-react';
 
 export default [
-  js.configs.recommended,
+  js.configs.recommended, // 'eslint:recommended'
+  typescriptPlugin.configs.recommended, // 'plugin:@typescript-eslint/recommended'
+  react.configs.recommended, // 'plugin:react/recommended'
+  prettier.configs.recommended, // 'plugin:prettier/recommended'
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -28,6 +31,10 @@ export default [
       'prettier/prettier': 'error',
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' }, // '_'로 시작하는 매개변수를 무시
+      ],
     },
   },
 ];
