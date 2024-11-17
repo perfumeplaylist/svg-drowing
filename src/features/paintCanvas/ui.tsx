@@ -1,6 +1,6 @@
 import type { StageProps } from 'react-konva';
 import { useDrawingContext } from './context/useDrawing';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import useLocalStorage from '../../shared/hooks/useLocalStorage';
 import type {
   CircleListType,
@@ -13,6 +13,7 @@ import type {
 import Canvas from '../../shared/components/Paint';
 import paintType from '../../shared/constant/paintInfo';
 import useUndoRedo from './useUndoRedo';
+import useDrawCanvas from './useDrawCanvas';
 
 interface TotalPaintInfoType {
   data: (
@@ -37,13 +38,17 @@ const DrawingCanvas = () => {
     }
   );
 
-  const [totalPaintInfo, setTotalPaintInfo] =
-    useState<TotalPaintInfoType>(storage);
+  const {
+    totalPaintInfo,
+    setTotalPaintInfo,
+    updateTotalPaintInfo,
+    getCurvePaintInfo,
+    getPolygonLastIndex,
+    lastShape,
+  } = useDrawCanvas(storage);
 
   const isDrawing = useRef<boolean>(false);
   const isCurving = useRef<boolean>(false);
-  const undoArr = useRef<TotalPaintInfoType['data']>([]);
-  const redoArr = useRef<TotalPaintInfoType['data']>([]);
 
   const newShape = useMemo(
     () =>
@@ -57,8 +62,6 @@ const DrawingCanvas = () => {
     [mode, thickness, colorInfo]
   );
 
-  // mousedown이 되었을때 어떻게 동작되는지 알아야할까?
-  // 어떤게 업데이트가 되어서 화면에 표시되는지가 더 중요하지 않을까?
   const handleMouseDown = ({ target }: StageProps) => {
     if (!mode.tool.length) return;
     const { x, y } = target.getStage().getPointerPosition();
@@ -66,116 +69,87 @@ const DrawingCanvas = () => {
 
     switch (mode.tool) {
       case 'line': {
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [
-            ...prev.data,
-            {
-              ...newShape,
-              points: [x, y, x, y],
-            } as LineListType,
-          ],
-        }));
+        const newData = totalPaintInfo.data.concat({
+          ...newShape,
+          points: [x, y, x, y],
+        } as LineListType);
+
+        updateTotalPaintInfo(newData);
+
         break;
       }
       case 'circle': {
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [
-            ...prev.data,
-            {
-              ...newShape,
-              x,
-              y,
-              rx: 0,
-              ry: 0,
-            } as CircleListType,
-          ],
-        }));
+        const newData = totalPaintInfo.data.concat({
+          ...newShape,
+          x,
+          y,
+          rx: 0,
+          ry: 0,
+        } as CircleListType);
+
+        updateTotalPaintInfo(newData);
+
         break;
       }
       case 'rect': {
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [
-            ...prev.data,
-            {
-              ...newShape,
-              x,
-              y,
-              width: 0,
-              height: 0,
-            } as RectListType,
-          ],
-        }));
+        const newData = totalPaintInfo.data.concat({
+          ...newShape,
+          x,
+          y,
+          width: 0,
+          height: 0,
+        } as RectListType);
+
+        updateTotalPaintInfo(newData);
+
         break;
       }
       case 'curve': {
         if (!isCurving.current) {
-          const newTempLine = {
+          const newTempLine = totalPaintInfo.data.concat({
+            ...newShape,
             x1: x,
             y1: y,
             x2: x,
             y2: y,
             state: 'dashLine',
-          };
-          setTotalPaintInfo((prev) => ({
-            ...prev,
-            data: [
-              ...prev.data,
-              {
-                ...newShape,
-                ...newTempLine,
-              } as CurveListType,
-            ],
-          }));
+          } as CurveListType);
+
+          updateTotalPaintInfo(newTempLine);
           break;
         }
         const lastCurveIndex = totalPaintInfo.data
           .slice()
           .reverse()
           .findIndex((shape) => shape.type === 'curve');
+
         if (lastCurveIndex !== -1) {
-          const actualIndex = totalPaintInfo.data.length - 1 - lastCurveIndex;
-          const lastCurve = totalPaintInfo.data[actualIndex] as CurveListType;
+          const { actualIndex, updatedCurve } =
+            getCurvePaintInfo(lastCurveIndex);
 
-          const pathData = `M ${lastCurve.x1} ${lastCurve.y1} Q ${lastCurve.controlX} ${lastCurve.controlY} ${lastCurve.x2} ${lastCurve.y2}`;
+          const newData = totalPaintInfo.data.map((shape, index) =>
+            index === actualIndex ? updatedCurve : shape
+          );
 
-          const updatedCurve = {
-            ...lastCurve,
-            state: 'curve',
-            d: pathData,
-          };
-
-          setTotalPaintInfo((prev) => ({
-            ...prev,
-            data: prev.data.map((shape, index) =>
-              index === actualIndex ? updatedCurve : shape
-            ),
-          }));
+          updateTotalPaintInfo(newData);
         }
+
         isCurving.current = false;
         isDrawing.current = false;
         break;
       }
       case 'polygon': {
-        const lastPolygonIndex = totalPaintInfo.data.findIndex(
-          (shape) =>
-            shape.type === 'polygon' && !(shape as PolygonListType).isComplete
-        );
+        const lastPolygonIndex = getPolygonLastIndex();
 
         if (lastPolygonIndex === -1) {
-          setTotalPaintInfo((prev) => ({
-            ...prev,
-            data: [
-              ...prev.data,
-              {
-                ...newShape,
-                points: [x, y, x, y],
-                isComplete: false,
-              } as PolygonListType,
-            ],
-          }));
+          const newDate = totalPaintInfo.data.concat({
+            ...newShape,
+            points: [x, y, x, y],
+            isComplete: false,
+          } as PolygonListType);
+
+          updateTotalPaintInfo(newDate);
+
           break;
         }
 
@@ -188,10 +162,7 @@ const DrawingCanvas = () => {
           return shape;
         });
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: updatedData,
-        }));
+        updateTotalPaintInfo(updatedData);
         break;
       }
     }
@@ -201,12 +172,9 @@ const DrawingCanvas = () => {
     if (!isDrawing.current || !mode.tool.length) return;
     const { x, y } = target.getStage().getPointerPosition();
 
-    const lastIndex = totalPaintInfo.data.length - 1;
-    const lastShape = totalPaintInfo.data[lastIndex];
-
     switch (mode.tool) {
       case 'line': {
-        const updatedLine = {
+        const updatedLine = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           points: [
             (lastShape as LineListType).points[0],
@@ -214,71 +182,56 @@ const DrawingCanvas = () => {
             x,
             y,
           ],
-        } as LineListType;
+        } as LineListType);
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [...prev.data.slice(0, -1), updatedLine],
-        }));
+        updateTotalPaintInfo(updatedLine);
         break;
       }
       case 'circle': {
-        const updatedCircle = {
+        const updatedCircle = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           rx: Math.abs((lastShape as CircleListType).x - x),
           ry: Math.abs((lastShape as CircleListType).y - y),
-        } as CircleListType;
+        } as CircleListType);
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [...prev.data.slice(0, -1), updatedCircle],
-        }));
+        updateTotalPaintInfo(updatedCircle);
         break;
       }
       case 'rect': {
-        const updatedRect = {
+        const updatedRect = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           width: x - (lastShape as RectListType).x,
           height: y - (lastShape as RectListType).y,
-        } as RectListType;
+        } as RectListType);
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [...prev.data.slice(0, -1), updatedRect],
-        }));
+        updateTotalPaintInfo(updatedRect);
+
         break;
       }
       case 'curve': {
         if (!isCurving.current) {
-          const updateCurve = {
+          const updateCurve = totalPaintInfo.data.slice(0, -1).concat({
             ...lastShape,
             x2: x,
             y2: y,
-          } as CurveListType;
+          } as CurveListType);
 
-          setTotalPaintInfo((prev) => ({
-            data: [...prev.data.slice(0, -1), updateCurve],
-          }));
+          updateTotalPaintInfo(updateCurve);
 
           break;
         }
-        const updateCurve = {
+        const updateCurve = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           controlX: x,
           controlY: y,
-        };
+        });
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [...prev.data.slice(0, -1), updateCurve],
-        }));
+        updateTotalPaintInfo(updateCurve);
+
         break;
       }
       case 'polygon': {
-        const lastPolygonIndex = totalPaintInfo.data.findIndex(
-          (shape) =>
-            shape.type === 'polygon' && !(shape as PolygonListType).isComplete
-        );
+        const lastPolygonIndex = getPolygonLastIndex();
 
         if (lastPolygonIndex !== -1) {
           const updatedData = totalPaintInfo.data.map((shape, index) =>
@@ -293,10 +246,8 @@ const DrawingCanvas = () => {
                 }
               : shape
           );
-          setTotalPaintInfo((prev) => ({
-            ...prev,
-            data: updatedData,
-          }));
+
+          updateTotalPaintInfo(updatedData);
         }
         break;
       }
@@ -320,12 +271,12 @@ const DrawingCanvas = () => {
           controlY: lastCurve.y2,
         };
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: prev.data.map((shape, index) =>
-            index === lastCurveIndex ? updatedCurve : shape
-          ),
-        }));
+        const newData = totalPaintInfo.data.map((shape, index) =>
+          index === lastCurveIndex ? updatedCurve : shape
+        );
+
+        updateTotalPaintInfo(newData);
+
         isCurving.current = true;
         return;
       }
@@ -333,20 +284,20 @@ const DrawingCanvas = () => {
 
     if (mode.tool === 'polygon') {
       const { x, y } = target.getStage().getPointerPosition();
-      const lastPolygonIndex = totalPaintInfo.data.findIndex(
-        (shape) =>
-          shape.type === 'polygon' && !(shape as PolygonListType).isComplete
-      );
+
+      const lastPolygonIndex = getPolygonLastIndex();
 
       if (lastPolygonIndex !== -1) {
         const lastPolygon = totalPaintInfo.data[
           lastPolygonIndex
         ] as PolygonListType;
+
         const startX = lastPolygon.points[0];
         const startY = lastPolygon.points[1];
 
         const isNearStart =
           Math.abs(x - startX) < 10 && Math.abs(y - startY) < 10;
+
         const updatedData = totalPaintInfo.data.map((shape, index) =>
           index === lastPolygonIndex
             ? {
@@ -359,17 +310,7 @@ const DrawingCanvas = () => {
             : shape
         );
 
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: updatedData,
-        }));
-
-        if (isNearStart) {
-          undoArr.current.push(
-            totalPaintInfo.data[totalPaintInfo.data.length - 1]
-          );
-          if (undoArr.current.length > 40) undoArr.current.shift();
-        }
+        updateTotalPaintInfo(updatedData);
       }
     }
     isDrawing.current = false;
