@@ -44,7 +44,7 @@ const DrawingCanvas = () => {
     setTotalPaintInfo,
     updateTotalPaintInfo,
     getCurvePaintInfo,
-    getPolygonLastIndex,
+    getTypeLastIndex,
     lastShape,
   } = useDrawCanvas(storage);
 
@@ -140,7 +140,7 @@ const DrawingCanvas = () => {
         break;
       }
       case paintInfo.PAINT_TYPE.polygon: {
-        const lastPolygonIndex = getPolygonLastIndex();
+        const lastPolygonIndex = getTypeLastIndex('polygon');
 
         if (lastPolygonIndex === -1) {
           const newDate = totalPaintInfo.data.concat({
@@ -232,7 +232,7 @@ const DrawingCanvas = () => {
         break;
       }
       case paintInfo.PAINT_TYPE.polygon: {
-        const lastPolygonIndex = getPolygonLastIndex();
+        const lastPolygonIndex = getTypeLastIndex('polygon');
 
         if (lastPolygonIndex !== -1) {
           const updatedData = totalPaintInfo.data.map((shape, index) =>
@@ -257,11 +257,7 @@ const DrawingCanvas = () => {
 
   const handleMouseUp = ({ target }: StageProps) => {
     if (mode.tool === paintInfo.PAINT_TYPE.curve) {
-      const lastCurveIndex = totalPaintInfo.data.findIndex(
-        (shape) =>
-          shape.type === paintInfo.PAINT_TYPE.curve &&
-          (shape as CurveListType).state === 'dashLine'
-      );
+      const lastCurveIndex = getTypeLastIndex('curve')!;
 
       if (lastCurveIndex !== -1) {
         const lastCurve = totalPaintInfo.data[lastCurveIndex] as CurveListType;
@@ -286,11 +282,11 @@ const DrawingCanvas = () => {
     if (mode.tool === paintInfo.PAINT_TYPE.polygon) {
       const { x, y } = target.getStage().getPointerPosition();
 
-      const lastPolygonIndex = getPolygonLastIndex();
+      const lastPolygonIndex = getTypeLastIndex('polygon');
 
       if (lastPolygonIndex !== -1) {
         const lastPolygon = totalPaintInfo.data[
-          lastPolygonIndex
+          lastPolygonIndex!
         ] as PolygonListType;
 
         const startX = lastPolygon.points[0];

@@ -1,4 +1,5 @@
 // 분기처리에 대한 업데이트 함수 목적
+import paintInfo from '../../../shared/constant/paintInfo';
 import type {
   CircleListType,
   CurveListType,
@@ -44,11 +45,19 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
     };
   };
 
-  const getPolygonLastIndex = () => {
-    return totalPaintInfo.data.findIndex(
-      (shape) =>
-        shape.type === 'polygon' && !(shape as PolygonListType).isComplete
-    );
+  const getTypeLastIndex = (type: keyof typeof paintInfo.PAINT_TYPE) => {
+    if (type === paintInfo.PAINT_TYPE.polygon)
+      return totalPaintInfo.data.findIndex(
+        (shape) =>
+          shape.type === paintInfo.PAINT_TYPE.polygon &&
+          !(shape as PolygonListType).isComplete
+      );
+    if (type === paintInfo.PAINT_TYPE.curve)
+      return totalPaintInfo.data.findIndex(
+        (shape) =>
+          shape.type === paintInfo.PAINT_TYPE.curve &&
+          (shape as CurveListType).state === 'dashLine'
+      );
   };
 
   const lastIndex = totalPaintInfo.data.length - 1;
@@ -59,7 +68,7 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
     setTotalPaintInfo,
     updateTotalPaintInfo,
     getCurvePaintInfo,
-    getPolygonLastIndex,
+    getTypeLastIndex,
     lastShape,
   };
 };
