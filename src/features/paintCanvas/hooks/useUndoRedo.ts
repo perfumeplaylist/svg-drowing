@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { TotalPaintInfoType } from './useDrawCanvas';
-import type { DrawingInfo } from '../../shared/types/paintType';
+import type { DrawingInfo } from '../../../shared/types/paintType';
 
 interface UseUndoRedoProps {
   totalPaintInfo: TotalPaintInfoType;

@@ -5,7 +5,7 @@ import type {
   LineListType,
   PolygonListType,
   RectListType,
-} from '../../shared/types/paintType';
+} from '../../../shared/types/paintType';
 import { useState } from 'react';
 
 type PaintDataType =
