@@ -1,5 +1,5 @@
 import type { StageProps } from 'react-konva';
-import { useDrawingContext } from './context/useDrawing';
+import { useDrawingContext } from './context/useDrawingContext';
 import { useMemo, useRef } from 'react';
 import useLocalStorage from '../../shared/hooks/useLocalStorage';
 import type {
@@ -12,8 +12,8 @@ import type {
 } from '../../shared/types/paintType';
 import Canvas from '../../shared/components/Paint';
 import paintType from '../../shared/constant/paintInfo';
-import useUndoRedo from './useUndoRedo';
-import useDrawCanvas from './useDrawCanvas';
+import useUndoRedo from './hooks/useUndoRedo';
+import useDrawCanvas from './hooks/useDrawCanvas';
 import paintInfo from '../../shared/constant/paintInfo';
 
 interface TotalPaintInfoType {

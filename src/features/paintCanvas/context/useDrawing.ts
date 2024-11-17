@@ -1,5 +1,4 @@
-import { ChangeEvent, useCallback, useContext, useState } from 'react';
-import DrawingContext from './DrawingContext';
+import { ChangeEvent, useCallback, useState } from 'react';
 import type { DrawingInfo } from '../../../shared/types/paintType';
 
 export const useDrawing = () => {
@@ -15,7 +14,6 @@ export const useDrawing = () => {
     },
   });
 
-  // TODO:이것을 리렌더링을 줄일수 있는 방향으로 생각해보기
   const handleChangeRange = (e: ChangeEvent<HTMLInputElement>) => {
     const {
       target: { value },
@@ -70,10 +68,4 @@ export const useDrawing = () => {
     handleChangeRange,
     handleChangeColor,
   };
-};
-
-export const useDrawingContext = () => {
-  const drawingContext = useContext(DrawingContext);
-  if (!drawingContext) throw new Error('DrawingContext is not defined');
-  return drawingContext;
 };

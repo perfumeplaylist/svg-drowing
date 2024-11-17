@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import Button from '../../../shared/components/Button';
-import { useDrawingContext } from '../../paintCanvas/context/useDrawing';
+import { useDrawingContext } from '../../paintCanvas/context/useDrawingContext';
 import Title from '../../../shared/components/Title';
 import paintType from '../../../shared/constant/paintInfo';
 import Card from '../../../shared/components/Card';

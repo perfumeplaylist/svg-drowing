@@ -1,6 +1,6 @@
 import Card from '../../../shared/components/Card';
 import Title from '../../../shared/components/Title';
-import { useDrawingContext } from '../../paintCanvas/context/useDrawing';
+import { useDrawingContext } from '../../paintCanvas/context/useDrawingContext';
 
 const LineSetting = () => {
   const {
