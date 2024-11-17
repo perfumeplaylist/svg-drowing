@@ -9,4 +9,8 @@ export const Button = styled.button<ButtonProps>`
   border: none;
   border-radius: 0.5rem;
   text-transform: capitalize;
+  cursor: pointer;
+  &:hover {
+    background-color: ${(props) => props.theme.color.gray600};
+  }
 `;
