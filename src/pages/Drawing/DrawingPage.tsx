@@ -9,6 +9,7 @@ import Divider from '../../shared/components/Divider';
 import Title from '../../shared/components/Title';
 import UndoRedo from '../../features/paintMode/undoRedo/ui';
 import ToolSetting from '../../features/paintMode/tools/ui';
+import { ErrorBoundary } from 'react-error-boundary';
 
 export default function DrawingPage() {
   return (
@@ -21,20 +22,22 @@ export default function DrawingPage() {
       </Common.Header.HeaderRoot>
       <Divider />
       <Common.Body>
-        <DrawingProvider>
-          <Paint.SideBar.Container>
-            <Paint.SideBar.SideBarItem>
-              <ToolSetting />
-              <LineSetting />
-              <ColorSetting />
-              <UndoRedo />
-            </Paint.SideBar.SideBarItem>
-          </Paint.SideBar.Container>
-          <Divider direction="column" />
-          <Paint.Main>
-            <DrawingCanvas />
-          </Paint.Main>
-        </DrawingProvider>
+        <ErrorBoundary fallbackRender={(props) => <>{props.error}</>}>
+          <DrawingProvider>
+            <Paint.SideBar.Container>
+              <Paint.SideBar.SideBarItem>
+                <ToolSetting />
+                <LineSetting />
+                <ColorSetting />
+                <UndoRedo />
+              </Paint.SideBar.SideBarItem>
+            </Paint.SideBar.Container>
+            <Divider direction="column" />
+            <Paint.Main>
+              <DrawingCanvas />
+            </Paint.Main>
+          </DrawingProvider>
+        </ErrorBoundary>
       </Common.Body>
     </>
   );
