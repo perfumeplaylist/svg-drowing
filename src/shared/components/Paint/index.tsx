@@ -124,6 +124,7 @@ const Paint = ({ type, ...props }: PaintProps) => {
           );
         }
       }
+      break;
     }
     case paintInfo.PAINT_TYPE.polygon: {
       const polygonProps = props as PolygonListType;
