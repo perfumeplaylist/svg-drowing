@@ -5,12 +5,18 @@ export const SideBar = styled.section`
   padding: 10px;
   max-width: 300px;
   height: 100%;
-  border-right: 1px solid ${(props) => props.theme.color.black};
   overflow-y: auto;
 `;
 
-export const Canvas = styled.section`
+export const Main = styled.section`
   flex: 2;
   height: 100%;
   overflow-y: auto;
+`;
+
+export const SideBarItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
 `;

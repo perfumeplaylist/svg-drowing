@@ -1,7 +1,7 @@
-import Canvas from './Canvas';
+import Main from './Main';
 import SideBar from './SideBar';
 
 export const Paint = {
   SideBar,
-  Canvas,
+  Main,
 };
