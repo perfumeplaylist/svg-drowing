@@ -1,6 +1,6 @@
 import type { StageProps } from 'react-konva';
 import { useDrawingContext } from './context/useDrawing';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import useLocalStorage from '../../shared/hooks/useLocalStorage';
 import type {
   CircleListType,
@@ -11,7 +11,8 @@ import type {
   DrawingInfoProps,
 } from '../../shared/types/paintType';
 import Canvas from '../../shared/components/Paint';
-import paintType from '../../shared/constant/paintType';
+import paintType from '../../shared/constant/paintInfo';
+import useUndoRedo from './useUndoRedo';
 
 interface TotalPaintInfoType {
   data: (
@@ -44,20 +45,24 @@ const DrawingCanvas = () => {
   const undoArr = useRef<TotalPaintInfoType['data']>([]);
   const redoArr = useRef<TotalPaintInfoType['data']>([]);
 
+  const newShape = useMemo(
+    () =>
+      ({
+        type: mode.tool,
+        key: Date.now(),
+        strokeWidth: thickness,
+        strokeColor: colorInfo.stoke,
+        color: colorInfo.fill,
+      }) as DrawingInfoProps,
+    [mode, thickness, colorInfo]
+  );
+
   // mousedown이 되었을때 어떻게 동작되는지 알아야할까?
   // 어떤게 업데이트가 되어서 화면에 표시되는지가 더 중요하지 않을까?
   const handleMouseDown = ({ target }: StageProps) => {
     if (!mode.tool.length) return;
     const { x, y } = target.getStage().getPointerPosition();
     isDrawing.current = true;
-
-    const newShape = {
-      type: mode.tool,
-      key: Date.now(),
-      strokeWidth: thickness,
-      strokeColor: colorInfo.stoke,
-      color: colorInfo.fill,
-    } as DrawingInfoProps;
 
     switch (mode.tool) {
       case 'line': {
@@ -322,6 +327,7 @@ const DrawingCanvas = () => {
           ),
         }));
         isCurving.current = true;
+        return;
       }
     }
 
@@ -365,43 +371,17 @@ const DrawingCanvas = () => {
           if (undoArr.current.length > 40) undoArr.current.shift();
         }
       }
-      isDrawing.current = false;
     }
+    isDrawing.current = false;
   };
 
-  useEffect(() => {
-    if (redoArr.current.length > 40) {
-      redoArr.current.shift();
-    }
-    setValue(totalPaintInfo);
-  }, [totalPaintInfo, setValue]);
-
-  useEffect(() => {
-    if (mode.state === 'undo') {
-      if (totalPaintInfo.data.length > 0) {
-        const lastPaint = totalPaintInfo.data[totalPaintInfo.data.length - 1];
-        undoArr.current.push(lastPaint);
-        const newPaintData = totalPaintInfo.data.slice(0, -1);
-
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: newPaintData,
-        }));
-
-        handleChangeModeState('');
-      }
-    } else if (mode.state === 'redo') {
-      if (undoArr.current.length > 0) {
-        const redoPaint = undoArr.current.pop()!;
-        setTotalPaintInfo((prev) => ({
-          ...prev,
-          data: [...prev.data, redoPaint],
-        }));
-
-        handleChangeModeState('');
-      }
-    }
-  }, [mode.state, totalPaintInfo]);
+  useUndoRedo({
+    totalPaintInfo,
+    setTotalPaintInfo,
+    modeState: mode.state,
+    handleChangeModeState,
+    setValue,
+  });
 
   return (
     <Canvas.Stage
