@@ -1,9 +1,10 @@
 import { ChangeEvent, createContext } from 'react';
-import { DrawingInfo } from './useDrawing';
+import type { DrawingInfo } from '../../../shared/types/paintType';
 
 interface DrawingContextType {
   drawingInfo: DrawingInfo;
-  handleChangeMode: (_value: string) => void;
+  handleChangeModeTool: (_value: DrawingInfo['mode']['tool']) => void;
+  handleChangeModeState: (_value: DrawingInfo['mode']['state']) => void;
   handleChangeColor: (
     _e: ChangeEvent<HTMLInputElement>,
     _type: keyof DrawingInfo['colorInfo']

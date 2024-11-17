@@ -1,24 +1,17 @@
 import { ChangeEvent, useCallback, useContext, useState } from 'react';
 import DrawingContext from './DrawingContext';
-
-export interface DrawingInfo {
-  mode: string;
-  thickness: number;
-  colorInfo: {
-    fill: string;
-    line: string;
-    background: string;
-  };
-}
+import type { DrawingInfo } from '../../../shared/types/paintType';
 
 export const useDrawing = () => {
   const [drawingInfo, setDrawingInfo] = useState<DrawingInfo>({
-    mode: '',
+    mode: {
+      tool: '',
+      state: '',
+    },
     thickness: 5,
     colorInfo: {
       fill: '#000000',
-      line: '#000000',
-      background: '#000000',
+      stoke: '#000000',
     },
   });
 
@@ -34,12 +27,19 @@ export const useDrawing = () => {
   };
 
   const resetMode = useCallback(() => {
-    setDrawingInfo((prev) => ({ ...prev, mode: '' }));
+    setDrawingInfo((prev) => ({
+      ...prev,
+      mode: { ...prev.mode, tool: '' },
+    }));
   }, []);
 
-  const handleChangeMode = (value: string) => {
-    if (value === drawingInfo.mode) resetMode();
-    else setDrawingInfo((prev) => ({ ...prev, mode: value }));
+  const handleChangeModeTool = (value: DrawingInfo['mode']['tool']) => {
+    if (value === drawingInfo.mode.tool) resetMode();
+    else
+      setDrawingInfo((prev) => ({
+        ...prev,
+        mode: { ...prev.mode, tool: value },
+      }));
   };
 
   const handleChangeColor = (
@@ -56,9 +56,17 @@ export const useDrawing = () => {
     }));
   };
 
+  const handleChangeModeState = (value: DrawingInfo['mode']['state']) => {
+    setDrawingInfo((prev) => ({
+      ...prev,
+      mode: { ...prev.mode, state: value },
+    }));
+  };
+
   return {
     drawingInfo,
-    handleChangeMode,
+    handleChangeModeTool,
+    handleChangeModeState,
     handleChangeRange,
     handleChangeColor,
   };
