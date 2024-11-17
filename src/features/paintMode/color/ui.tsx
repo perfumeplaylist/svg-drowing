@@ -16,8 +16,8 @@ const ColorSetting = () => {
       </Card.Header>
       <Card.Main>
         <Card.List>
-          {paintType.COLOR_ARR.map((name) => (
-            <li>
+          {paintType.COLOR_ARR.map((name, index) => (
+            <li key={index}>
               <Title level={4}>{name}</Title>
               <input
                 type="color"

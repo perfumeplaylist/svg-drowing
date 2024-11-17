@@ -40,8 +40,8 @@ const ToolSetting = () => {
       </Card.Header>
       <Card.Main>
         <Card.List>
-          {paintType.BUTTON_ARR.map((value) => (
-            <li>
+          {paintType.BUTTON_ARR.map((value, index) => (
+            <li key={index}>
               <Button
                 isClicked={isClicked(value)}
                 onClick={() => handleChangeModeTool(value)}

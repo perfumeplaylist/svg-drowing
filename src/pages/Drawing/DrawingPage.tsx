@@ -3,12 +3,13 @@ import DrawingCanvas from '../../features/paintCanvas/ui';
 import ColorSetting from '../../features/paintMode/color/ui';
 import LineSetting from '../../features/paintMode/thickness/ui';
 import logoIcon from '../../assets/icon.svg';
-import { Common } from '../../layout/Common';
-import { Paint } from '../../layout/Paint';
 import Divider from '../../shared/components/Divider';
 import Title from '../../shared/components/Title';
 import UndoRedo from '../../features/paintMode/undoRedo/ui';
 import ToolSetting from '../../features/paintMode/tools/ui';
+import Toast from '../../shared/components/Toast';
+import { Common } from '../../layout/Common';
+import { Paint } from '../../layout/Paint';
 import { ErrorBoundary } from 'react-error-boundary';
 
 export default function DrawingPage() {
@@ -22,7 +23,13 @@ export default function DrawingPage() {
       </Common.Header.HeaderRoot>
       <Divider />
       <Common.Body>
-        <ErrorBoundary fallbackRender={(props) => <>{props.error}</>}>
+        <ErrorBoundary
+          fallbackRender={(props) => (
+            <Toast duration={1000}>
+              <Toast.Content>{props.error}</Toast.Content>
+            </Toast>
+          )}
+        >
           <DrawingProvider>
             <Paint.SideBar.Container>
               <Paint.SideBar.SideBarItem>

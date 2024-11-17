@@ -13,8 +13,10 @@ const UndoRedo = () => {
         <Title>Undo/Redo</Title>
       </Card.Header>
       <Card.Main>
-        {paintType.PAINT_ARR.map((value) => (
-          <Button onClick={() => handleChangeModeState(value)}>{value}</Button>
+        {paintType.PAINT_ARR.map((value, index) => (
+          <Button key={index} onClick={() => handleChangeModeState(value)}>
+            {value}
+          </Button>
         ))}
       </Card.Main>
     </Card>
