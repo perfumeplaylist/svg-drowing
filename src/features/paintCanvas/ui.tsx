@@ -14,6 +14,7 @@ import Canvas from '../../shared/components/Paint';
 import paintType from '../../shared/constant/paintInfo';
 import useUndoRedo from './useUndoRedo';
 import useDrawCanvas from './useDrawCanvas';
+import paintInfo from '../../shared/constant/paintInfo';
 
 interface TotalPaintInfoType {
   data: (
@@ -68,7 +69,7 @@ const DrawingCanvas = () => {
     isDrawing.current = true;
 
     switch (mode.tool) {
-      case 'line': {
+      case paintInfo.PAINT_TYPE.line: {
         const newData = totalPaintInfo.data.concat({
           ...newShape,
           points: [x, y, x, y],
@@ -78,7 +79,7 @@ const DrawingCanvas = () => {
 
         break;
       }
-      case 'circle': {
+      case paintInfo.PAINT_TYPE.circle: {
         const newData = totalPaintInfo.data.concat({
           ...newShape,
           x,
@@ -91,7 +92,7 @@ const DrawingCanvas = () => {
 
         break;
       }
-      case 'rect': {
+      case paintInfo.PAINT_TYPE.rect: {
         const newData = totalPaintInfo.data.concat({
           ...newShape,
           x,
@@ -104,7 +105,7 @@ const DrawingCanvas = () => {
 
         break;
       }
-      case 'curve': {
+      case paintInfo.PAINT_TYPE.curve: {
         if (!isCurving.current) {
           const newTempLine = totalPaintInfo.data.concat({
             ...newShape,
@@ -121,7 +122,7 @@ const DrawingCanvas = () => {
         const lastCurveIndex = totalPaintInfo.data
           .slice()
           .reverse()
-          .findIndex((shape) => shape.type === 'curve');
+          .findIndex((shape) => shape.type === paintInfo.PAINT_TYPE.curve);
 
         if (lastCurveIndex !== -1) {
           const { actualIndex, updatedCurve } =
@@ -138,7 +139,7 @@ const DrawingCanvas = () => {
         isDrawing.current = false;
         break;
       }
-      case 'polygon': {
+      case paintInfo.PAINT_TYPE.polygon: {
         const lastPolygonIndex = getPolygonLastIndex();
 
         if (lastPolygonIndex === -1) {
@@ -173,7 +174,7 @@ const DrawingCanvas = () => {
     const { x, y } = target.getStage().getPointerPosition();
 
     switch (mode.tool) {
-      case 'line': {
+      case paintInfo.PAINT_TYPE.line: {
         const updatedLine = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           points: [
@@ -187,7 +188,7 @@ const DrawingCanvas = () => {
         updateTotalPaintInfo(updatedLine);
         break;
       }
-      case 'circle': {
+      case paintInfo.PAINT_TYPE.circle: {
         const updatedCircle = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           rx: Math.abs((lastShape as CircleListType).x - x),
@@ -197,7 +198,7 @@ const DrawingCanvas = () => {
         updateTotalPaintInfo(updatedCircle);
         break;
       }
-      case 'rect': {
+      case paintInfo.PAINT_TYPE.rect: {
         const updatedRect = totalPaintInfo.data.slice(0, -1).concat({
           ...lastShape,
           width: x - (lastShape as RectListType).x,
@@ -208,7 +209,7 @@ const DrawingCanvas = () => {
 
         break;
       }
-      case 'curve': {
+      case paintInfo.PAINT_TYPE.curve: {
         if (!isCurving.current) {
           const updateCurve = totalPaintInfo.data.slice(0, -1).concat({
             ...lastShape,
@@ -230,7 +231,7 @@ const DrawingCanvas = () => {
 
         break;
       }
-      case 'polygon': {
+      case paintInfo.PAINT_TYPE.polygon: {
         const lastPolygonIndex = getPolygonLastIndex();
 
         if (lastPolygonIndex !== -1) {
@@ -255,10 +256,10 @@ const DrawingCanvas = () => {
   };
 
   const handleMouseUp = ({ target }: StageProps) => {
-    if (mode.tool === 'curve') {
+    if (mode.tool === paintInfo.PAINT_TYPE.curve) {
       const lastCurveIndex = totalPaintInfo.data.findIndex(
         (shape) =>
-          shape.type === 'curve' &&
+          shape.type === paintInfo.PAINT_TYPE.curve &&
           (shape as CurveListType).state === 'dashLine'
       );
 
@@ -282,7 +283,7 @@ const DrawingCanvas = () => {
       }
     }
 
-    if (mode.tool === 'polygon') {
+    if (mode.tool === paintInfo.PAINT_TYPE.polygon) {
       const { x, y } = target.getStage().getPointerPosition();
 
       const lastPolygonIndex = getPolygonLastIndex();
