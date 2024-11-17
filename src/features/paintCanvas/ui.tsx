@@ -55,7 +55,7 @@ const DrawingCanvas = () => {
     () =>
       ({
         type: mode.tool,
-        key: Date.now(),
+        key: Date.now() - Math.random(),
         strokeWidth: thickness,
         strokeColor: colorInfo.stoke,
         color: colorInfo.fill,
