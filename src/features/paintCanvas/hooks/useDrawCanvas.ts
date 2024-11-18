@@ -23,29 +23,60 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
   const [totalPaintInfo, setTotalPaintInfo] =
     useState<TotalPaintInfoType>(storage);
 
+  const updateFindTotal = <T extends PaintDataType>(
+    targetIndex: number,
+    updateState: T
+  ) => {
+    const newData = totalPaintInfo.data.map((shape, index) =>
+      index === targetIndex ? updateState : shape
+    );
+
+    setTotalPaintInfo((prev) => ({ ...prev, data: [...newData] }));
+  };
+
+  const updateTotal = <T extends PaintDataType>(
+    updateState: T,
+    isRemove: boolean = false
+  ) => {
+    const newData = isRemove
+      ? totalPaintInfo.data.slice(0, -1).concat(updateState as T)
+      : totalPaintInfo.data.concat(updateState as T);
+
+    setTotalPaintInfo((prev) => ({ ...prev, data: newData }));
+  };
+
+  // 삭제해줘야한다.
   const updateTotalPaintInfo = (updateState: PaintDataType[]) => {
-    setTotalPaintInfo((prev) => ({ ...prev, data: [...updateState] }));
+    setTotalPaintInfo((prev) => ({ ...prev, data: updateState }));
   };
 
-  const getCurvePaintInfo = (lastCurveIndex: number) => {
-    const actualIndex = totalPaintInfo.data.length - 1 - lastCurveIndex;
-    const lastCurve = totalPaintInfo.data[actualIndex] as CurveListType;
+  const getUpdateLastType = (
+    lastCurveIndex: number,
+    type: Omit<keyof typeof paintInfo.PAINT_TYPE, ''>
+  ) => {
+    switch (type) {
+      case paintInfo.PAINT_TYPE.curve: {
+        const lastData = totalPaintInfo.data[lastCurveIndex] as CurveListType;
 
-    const pathData = `M ${lastCurve.x1} ${lastCurve.y1} Q ${lastCurve.controlX} ${lastCurve.controlY} ${lastCurve.x2} ${lastCurve.y2}`;
+        const pathData = `M ${lastData.x1} ${lastData.y1} Q ${lastData.controlX} ${lastData.controlY} ${lastData.x2} ${lastData.y2}`;
 
-    const updatedCurve = {
-      ...lastCurve,
-      state: 'curve',
-      d: pathData,
-    };
-
-    return {
-      actualIndex,
-      updatedCurve,
-    };
+        return {
+          ...lastData,
+          state: 'curve',
+          d: pathData,
+        };
+      }
+      case paintInfo.PAINT_TYPE.polygon: {
+        const lastData = totalPaintInfo.data[lastCurveIndex] as PolygonListType;
+        return lastData;
+      }
+    }
   };
 
-  const getTypeLastIndex = (type: keyof typeof paintInfo.PAINT_TYPE) => {
+  const getTypeLastIndex = (
+    type: Omit<keyof typeof paintInfo.PAINT_TYPE, ''>,
+    state?: string
+  ) => {
     if (type === paintInfo.PAINT_TYPE.polygon)
       return totalPaintInfo.data.findIndex(
         (shape) =>
@@ -56,7 +87,7 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
       return totalPaintInfo.data.findIndex(
         (shape) =>
           shape.type === paintInfo.PAINT_TYPE.curve &&
-          (shape as CurveListType).state === 'dashLine'
+          (shape as CurveListType).state === state
       );
   };
 
@@ -67,7 +98,9 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
     totalPaintInfo,
     setTotalPaintInfo,
     updateTotalPaintInfo,
-    getCurvePaintInfo,
+    updateTotal,
+    getUpdateLastType,
+    updateFindTotal,
     getTypeLastIndex,
     lastShape,
   };

@@ -44,8 +44,8 @@ export interface CurveListType extends DrawingInfoProps {
   y1: number;
   x2: number;
   y2: number;
-  controlX: number;
-  controlY: number;
   state: string;
-  d: string;
+  controlX?: number;
+  controlY?: number;
+  d?: string;
 }
