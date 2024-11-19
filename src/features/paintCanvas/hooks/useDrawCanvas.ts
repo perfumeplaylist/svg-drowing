@@ -45,11 +45,6 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
     setTotalPaintInfo((prev) => ({ ...prev, data: newData }));
   };
 
-  // 삭제해줘야한다.
-  const updateTotalPaintInfo = (updateState: PaintDataType[]) => {
-    setTotalPaintInfo((prev) => ({ ...prev, data: updateState }));
-  };
-
   const getUpdateLastType = (
     lastCurveIndex: number,
     type: Omit<keyof typeof paintInfo.PAINT_TYPE, ''>
@@ -97,7 +92,6 @@ const useDrawCanvas = (storage: TotalPaintInfoType) => {
   return {
     totalPaintInfo,
     setTotalPaintInfo,
-    updateTotalPaintInfo,
     updateTotal,
     getUpdateLastType,
     updateFindTotal,

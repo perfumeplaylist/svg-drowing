@@ -41,7 +41,6 @@ const DrawingCanvas = () => {
   const {
     totalPaintInfo,
     setTotalPaintInfo,
-    updateTotalPaintInfo,
     updateTotal,
     updateFindTotal,
     getUpdateLastType,
@@ -114,7 +113,7 @@ const DrawingCanvas = () => {
           height: 0,
         };
 
-        updateTotal<RectListType>(newData);
+        updateTotal(newData);
 
         break;
       }
